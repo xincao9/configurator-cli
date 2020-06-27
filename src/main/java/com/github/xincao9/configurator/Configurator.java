@@ -53,9 +53,7 @@ public class Configurator {
     private void init() throws ConfiguratorException, DkvException {
         path = String.format("%s/%s/%s/%s/%s", System.getenv("HOME"), env, group, project, version);
         File dir = new File(path);
-        if (dir.mkdirs() == false) {
-            throw new ConfiguratorException(String.format("mkdir %s 失败", path));
-        }
+        dir.mkdirs();
         dkvClient = new DkvClientImpl(master);
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((Runnable r) -> new Thread(r, "远程配置同步任务"));
         scheduledExecutorService.scheduleAtFixedRate(() -> {

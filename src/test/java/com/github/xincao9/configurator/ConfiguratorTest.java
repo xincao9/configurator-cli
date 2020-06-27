@@ -22,7 +22,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- *
  * @author xincao9@gmail.com
  */
 public class ConfiguratorTest {
@@ -47,18 +46,18 @@ public class ConfiguratorTest {
     }
 
     /**
-     *
      * @throws java.lang.Throwable
      */
     @Test
     public void testBuilder() throws Throwable {
         Configurator.Builder.newBuilder()
-                .master("localhost:9090")
-                .env("test")
-                .group("cbs")
-                .project("user-service")
-                .version("1.0")
-                .build();
+            .master("localhost:9090")
+            .env("test")
+            .group("cbs")
+            .project("user-service")
+            .version("1.0")
+            .build();
+        Thread.sleep(5000);
     }
 
 }
