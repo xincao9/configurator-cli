@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Personal.
+ * Copyright 2020 xincao9@gmail.com.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.xincao9.configurator.dkv;
+package com.github.xincao9.configurator;
 
 /**
- * dkv 异常
  *
  * @author xincao9@gmail.com
  */
-public class DkvException extends Exception {
+public class ConfiguratorException extends Exception {
 
-    public DkvException(String message) {
-        super(message);
+    public ConfiguratorException(String string) {
+        super(string);
     }
+
 }

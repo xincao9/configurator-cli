@@ -1,3 +1,18 @@
+/*
+ * Copyright 2020 Personal.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.github.xincao9.configurator;
 
 import com.github.xincao9.configurator.dkv.DkvClient;
@@ -35,11 +50,11 @@ public class Configurator {
     private ScheduledExecutorService scheduledExecutorService;
     private String path;
 
-    private void init() throws Throwable {
+    private void init() throws ConfiguratorException, DkvException {
         path = String.format("%s/%s/%s/%s/%s", System.getenv("HOME"), env, group, project, version);
         File dir = new File(path);
         if (dir.mkdirs() == false) {
-            throw new RuntimeException(String.format("mkdir %s 失败", path));
+            throw new ConfiguratorException(String.format("mkdir %s 失败", path));
         }
         dkvClient = new DkvClientImpl(master);
         scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((Runnable r) -> new Thread(r, "远程配置同步任务"));
