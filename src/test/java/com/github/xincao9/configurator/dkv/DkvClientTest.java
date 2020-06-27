@@ -44,18 +44,11 @@ public class DkvClientTest {
     }
 
     @Benchmark
-    public void set() throws DkvException {
+    public void cmd() throws DkvException {
         String value = RandomStringUtils.randomAscii(128);
-        dkvClient.set(String.valueOf(no.incrementAndGet()), value);
-    }
-
-    @Benchmark
-    public void get() throws DkvException {
+        String key = String.valueOf(no.incrementAndGet());
+        dkvClient.set(key, value);
         System.out.println(dkvClient.get(String.valueOf(no.incrementAndGet())));
-    }
-
-    @Benchmark
-    public void delete() throws DkvException {
         dkvClient.delete(String.valueOf(no.incrementAndGet()));
     }
 

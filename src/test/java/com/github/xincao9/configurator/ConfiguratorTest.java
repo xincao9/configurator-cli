@@ -51,12 +51,12 @@ public class ConfiguratorTest {
     @Test
     public void testBuilder() throws Throwable {
         Configurator.Builder.newBuilder()
-            .master("localhost:9090")
-            .env("test")
-            .group("cbs")
-            .project("user-service")
-            .version("1.0")
-            .build();
+                .master("localhost:9090")
+                .env("test")
+                .group("cbs")
+                .project("user-service")
+                .version("1.0")
+                .build();
         Thread.sleep(5000);
     }
 
