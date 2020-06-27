@@ -2,8 +2,17 @@ package com.github.xincao9.configurator;
 
 import com.github.xincao9.configurator.dkv.DkvClient;
 import com.github.xincao9.configurator.dkv.DkvClientImpl;
-
+import com.github.xincao9.configurator.dkv.DkvException;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 配置器
@@ -12,6 +21,10 @@ import java.util.Set;
  */
 public class Configurator {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Configurator.class);
+    private static final String KEY_FORMAT = "configurator|%s|%s|%s|%s";
+    private static final String FILENAME = "application.json";
+
     private String master;
     private Set<String> slaves;
     private String env;
@@ -19,15 +32,36 @@ public class Configurator {
     private String project;
     private String version;
     private DkvClient dkvClient;
+    private ScheduledExecutorService scheduledExecutorService;
+    private String path;
 
     private void init() throws Throwable {
-        this.dkvClient = new DkvClientImpl(master);
-        // 异步任务，定时同步配置从远程到本地
+        path = String.format("%s/%s/%s/%s/%s", System.getenv("HOME"), env, group, project, version);
+        File dir = new File(path);
+        if (dir.mkdirs() == false) {
+            throw new RuntimeException(String.format("mkdir %s 失败", path));
+        }
+        dkvClient = new DkvClientImpl(master);
+        scheduledExecutorService = Executors.newSingleThreadScheduledExecutor((Runnable r) -> new Thread(r, "远程配置同步任务"));
+        scheduledExecutorService.scheduleAtFixedRate(() -> {
+            String k = key();
+            try {
+                String v = dkvClient.get(k);
+                if (StringUtils.isNoneBlank(v)) {
+                    File file = new File(String.format("%s/%s", path, FILENAME));
+                    try (FileWriter writer = new FileWriter(file)) {
+                        writer.write(v);
+                    }
+                }
+            } catch (DkvException | IOException e) {
+                LOGGER.error(e.getMessage());
+            }
+        }, 0, 30, TimeUnit.SECONDS);
     }
 
     static class Builder {
 
-        private Configurator configurator;
+        private final Configurator configurator;
 
         private Builder(Configurator configurator) {
             this.configurator = configurator;
@@ -71,5 +105,9 @@ public class Configurator {
             configurator.init();
             return configurator;
         }
+    }
+
+    public String key() {
+        return String.format(KEY_FORMAT, env, group, project, version);
     }
 }
