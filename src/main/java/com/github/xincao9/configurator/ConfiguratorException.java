@@ -16,6 +16,7 @@
 package com.github.xincao9.configurator;
 
 /**
+ * configurator 异常
  *
  * @author xincao9@gmail.com
  */
