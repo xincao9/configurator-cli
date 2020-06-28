@@ -32,7 +32,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class DkvClientTest {
 
     private DkvClient dkvClient;
-    private final AtomicInteger no = new AtomicInteger(0);
+    private final AtomicInteger counter = new AtomicInteger(0);
 
     @Setup
     public void setUp() throws Throwable {
@@ -46,10 +46,10 @@ public class DkvClientTest {
     @Benchmark
     public void cmd() throws DkvException {
         String value = RandomStringUtils.randomAscii(128);
-        String key = String.valueOf(no.incrementAndGet());
-        dkvClient.set(key, value);
-        System.out.println(dkvClient.get(String.valueOf(no.incrementAndGet())));
-        dkvClient.delete(String.valueOf(no.incrementAndGet()));
+        String no = String.valueOf(counter.incrementAndGet());
+        dkvClient.set(no, value);
+        System.out.println(dkvClient.get(no));
+        dkvClient.delete(no);
     }
 
     @Test
