@@ -36,7 +36,7 @@ public class DkvClientImpl implements DkvClient {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final Integer OK_STATUS = 200;
     private String endpoint;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     static class KV {
 
@@ -113,9 +113,7 @@ public class DkvClientImpl implements DkvClient {
         Request request = new Request.Builder()
             .url(String.format("%s/%s", endpoint, key))
             .build();
-        Response response = null;
-        try {
-            response = client.newCall(request).execute();
+        try (Response response = client.newCall(request).execute()) {
             Result result = objectMapper.readValue(response.body().string(), Result.class);
             if (!OK_STATUS.equals(result.getCode())) {
                 throw new DkvException(String.format("期望状态码%d, 实际为 %d", OK_STATUS, result.getCode()));
@@ -123,10 +121,6 @@ public class DkvClientImpl implements DkvClient {
             return result.getKv().getV();
         } catch (IOException e) {
             throw new DkvException(e.getMessage());
-        } finally {
-            if (response != null) {
-                response.close();
-            }
         }
     }
 

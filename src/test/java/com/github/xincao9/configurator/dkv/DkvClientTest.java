@@ -32,7 +32,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 public class DkvClientTest {
 
     private DkvClient dkvClient;
-    private AtomicInteger no = new AtomicInteger(0);
+    private final AtomicInteger no = new AtomicInteger(0);
 
     @Setup
     public void setUp() throws Throwable {

@@ -54,7 +54,7 @@ public class ConfiguratorTest {
             .version("1.0")
             .build();
         System.out.println(configurator.get("redis.host"));
-        Thread.sleep(5000);
+        Thread.sleep(3000);
         configurator.close();
     }
 

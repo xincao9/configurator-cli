@@ -53,9 +53,9 @@ public class Configurator {
     private DkvClient dkvClient;
     private ScheduledExecutorService remoteSyncExecutorService;
     private String path;
-    private Map<String, Object> properties = new ConcurrentHashMap<>();
-    private JavaPropsMapper javaPropsMapper = new JavaPropsMapper();
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final Map<String, Object> properties = new ConcurrentHashMap<>();
+    private final JavaPropsMapper javaPropsMapper = new JavaPropsMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     private void init() throws ConfiguratorException, DkvException {
         path = String.format("%s/%s/%s/%s/%s", System.getenv("HOME"), env, group, project, version);
@@ -85,7 +85,7 @@ public class Configurator {
             String data = null;
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 StringBuilder sb = new StringBuilder();
-                String line = null;
+                String line;
                 while ((line = br.readLine()) != null) {
                     sb.append(line);
                 }
