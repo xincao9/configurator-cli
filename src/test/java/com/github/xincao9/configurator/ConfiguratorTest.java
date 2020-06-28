@@ -15,11 +15,7 @@
  */
 package com.github.xincao9.configurator;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * @author xincao9@gmail.com
@@ -49,15 +45,17 @@ public class ConfiguratorTest {
      * @throws java.lang.Throwable
      */
     @Test
-    public void testBuilder() throws Throwable {
-        Configurator.Builder.newBuilder()
-                .master("localhost:9090")
-                .env("test")
-                .group("cbs")
-                .project("user-service")
-                .version("1.0")
-                .build();
+    public void testGet() throws Throwable {
+        Configurator configurator = Configurator.Builder.newBuilder()
+            .master("localhost:9090")
+            .env("test")
+            .group("cbs")
+            .project("user-service")
+            .version("1.0")
+            .build();
+        System.out.println(configurator.get("redis.host"));
         Thread.sleep(5000);
+        configurator.close();
     }
 
 }

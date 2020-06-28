@@ -15,15 +15,14 @@
  */
 package com.github.xincao9.configurator.dkv;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * DKV 客户端
@@ -37,6 +36,7 @@ public class DkvClientImpl implements DkvClient {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final Integer OK_STATUS = 200;
     private String endpoint;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     static class KV {
 
@@ -111,12 +111,12 @@ public class DkvClientImpl implements DkvClient {
     @Override
     public String get(String key) throws DkvException {
         Request request = new Request.Builder()
-                .url(String.format("%s/%s", endpoint, key))
-                .build();
+            .url(String.format("%s/%s", endpoint, key))
+            .build();
         Response response = null;
         try {
             response = client.newCall(request).execute();
-            Result result = JSONObject.parseObject(response.body().string(), Result.class);
+            Result result = objectMapper.readValue(response.body().string(), Result.class);
             if (!OK_STATUS.equals(result.getCode())) {
                 throw new DkvException(String.format("期望状态码%d, 实际为 %d", OK_STATUS, result.getCode()));
             }
@@ -133,20 +133,26 @@ public class DkvClientImpl implements DkvClient {
     /**
      * 设置键值对
      *
-     * @param key 键
+     * @param key   键
      * @param value 值
      * @throws DkvException Dkv异常
      */
     @Override
     public void set(String key, String value) throws DkvException {
-        JSONObject data = new JSONObject();
-        data.put("k", key);
-        data.put("v", value);
-        RequestBody body = RequestBody.create(data.toJSONString(), JSON);
+        String data;
+        try {
+            Map<String, String> map = new HashMap();
+            map.put("k", key);
+            map.put("v", value);
+            data = objectMapper.writeValueAsString(map);
+        } catch (JsonProcessingException e) {
+            throw new DkvException(e.getMessage());
+        }
+        RequestBody body = RequestBody.create(data, JSON);
         Request request = new Request.Builder()
-                .url(endpoint)
-                .put(body)
-                .build();
+            .url(endpoint)
+            .put(body)
+            .build();
         exec(request);
     }
 
@@ -159,9 +165,9 @@ public class DkvClientImpl implements DkvClient {
     @Override
     public void delete(String key) throws DkvException {
         Request request = new Request.Builder()
-                .url(String.format("%s/%s", endpoint, key))
-                .delete()
-                .build();
+            .url(String.format("%s/%s", endpoint, key))
+            .delete()
+            .build();
         exec(request);
     }
 
@@ -170,7 +176,7 @@ public class DkvClientImpl implements DkvClient {
             if (response == null || response.body() == null) {
                 return;
             }
-            Result result = JSONObject.parseObject(response.body().string(), Result.class);
+            Result result = objectMapper.readValue(response.body().string(), Result.class);
             if (!OK_STATUS.equals(result.getCode())) {
                 throw new DkvException(String.format("期望状态码%d, 实际为 %d", OK_STATUS, result.getCode()));
             }
