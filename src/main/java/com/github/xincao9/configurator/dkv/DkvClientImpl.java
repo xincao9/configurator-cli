@@ -21,8 +21,8 @@ import okhttp3.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * DKV 客户端
@@ -35,8 +35,10 @@ public class DkvClientImpl implements DkvClient {
     private static final String HTTP = "http";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final Integer OK_STATUS = 200;
-    private String endpoint;
+    private String masterEndpoint;
+    private List<String> endpoints;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final AtomicLong counter = new AtomicLong(0);
 
     static class KV {
 
@@ -92,12 +94,29 @@ public class DkvClientImpl implements DkvClient {
         }
     }
 
-    public DkvClientImpl(String address) throws DkvException {
-        if (StringUtils.isBlank(address)) {
+    /**
+     * 构造器
+     *
+     * @param master 主地址
+     * @param slaves 从地址
+     * @throws DkvException Dkv异常
+     */
+    public DkvClientImpl(String master, Set<String> slaves) throws DkvException {
+        if (StringUtils.isBlank(master)) {
             throw new DkvException("dkv 地址不能为空");
         }
-        if (!StringUtils.startsWith(address, HTTP)) {
-            endpoint = String.format("http://%s/kv", address);
+        if (!StringUtils.startsWith(master, HTTP)) {
+            masterEndpoint = String.format("http://%s/kv", master);
+        }
+        endpoints = new ArrayList();
+        endpoints.add(masterEndpoint);
+        if (slaves != null && !slaves.isEmpty()) {
+            for (String slave : slaves) {
+                if (!StringUtils.startsWith(slave, HTTP)) {
+                    slave = String.format("http://%s/kv", master);
+                }
+                endpoints.add(slave);
+            }
         }
     }
 
@@ -110,6 +129,7 @@ public class DkvClientImpl implements DkvClient {
      */
     @Override
     public String get(String key) throws DkvException {
+        String endpoint = balancer();
         Request request = new Request.Builder()
             .url(String.format("%s/%s", endpoint, key))
             .build();
@@ -122,6 +142,19 @@ public class DkvClientImpl implements DkvClient {
         } catch (IOException e) {
             throw new DkvException(e.getMessage());
         }
+    }
+
+    /**
+     * 轮训负载均衡器
+     *
+     * @return 端点
+     * @throws DkvException Dkv异常
+     */
+    private String balancer () throws DkvException {
+        if (endpoints != null) {
+            return endpoints.get((int)(counter.incrementAndGet() % endpoints.size()));
+        }
+        throw new DkvException("endpoints is empty");
     }
 
     /**
@@ -144,7 +177,7 @@ public class DkvClientImpl implements DkvClient {
         }
         RequestBody body = RequestBody.create(data, JSON);
         Request request = new Request.Builder()
-            .url(endpoint)
+            .url(masterEndpoint)
             .put(body)
             .build();
         exec(request);
@@ -159,7 +192,7 @@ public class DkvClientImpl implements DkvClient {
     @Override
     public void delete(String key) throws DkvException {
         Request request = new Request.Builder()
-            .url(String.format("%s/%s", endpoint, key))
+            .url(String.format("%s/%s", masterEndpoint, key))
             .delete()
             .build();
         exec(request);

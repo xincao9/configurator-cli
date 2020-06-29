@@ -36,7 +36,7 @@ public class DkvClientTest {
 
     @Setup
     public void setUp() throws Throwable {
-        dkvClient = new DkvClientImpl("localhost:9090");
+        dkvClient = new DkvClientImpl("localhost:9090", null);
     }
 
     @TearDown

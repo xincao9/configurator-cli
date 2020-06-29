@@ -66,7 +66,7 @@ public class Configurator {
             LOGGER.error(e.getMessage());
             throw new ConfiguratorException(String.format("mkdir %s failure", path));
         }
-        dkvClient = new DkvClientImpl(master);
+        dkvClient = new DkvClientImpl(master, slaves);
         remoteSyncExecutorService = Executors.newSingleThreadScheduledExecutor((Runnable r) -> new Thread(r, "远程配置同步任务"));
         Runnable r = () -> {
             String k = key();
