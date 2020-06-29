@@ -15,7 +15,10 @@
  */
 package com.github.xincao9.configurator;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.xincao9.configurator.dkv.DkvClient;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.*;
 
 /**
@@ -61,9 +64,16 @@ public class ConfiguratorTest {
             .version(VERSION)
             .build();
         DkvClient dkvClient = configurator.getDkvClient();
-        dkvClient.set(configurator.key(), "{\"redis\": {\"host\": \"127.0.0.1\", \"port\": 6379}}");
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, Object> config = new HashMap();
+        Map<String, Object> redis = new HashMap();
+        config.put("redis", redis);
+        redis.put("host", "127.0.0.1");
+        redis.put("port", 6379);
+        dkvClient.set(configurator.key(), objectMapper.writeValueAsString(config));
         configurator.refresher();
         System.out.println(configurator.get("redis.host"));
+        System.out.println(configurator.get("redis.port"));
         dkvClient.delete(configurator.key());
         configurator.close();
     }
