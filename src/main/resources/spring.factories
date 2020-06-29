@@ -1,1 +1,0 @@
-org.springframework.boot.env.PropertySourceLoader=com.github.xincao9.configurator.ConfiguratorPropertySourceLoader
