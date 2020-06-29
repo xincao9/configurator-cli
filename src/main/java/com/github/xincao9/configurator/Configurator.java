@@ -69,49 +69,53 @@ public class Configurator {
         dkvClient = new DkvClientImpl(master, slaves);
         remoteSyncExecutorService = Executors.newSingleThreadScheduledExecutor((Runnable r) -> new Thread(r, "远程配置同步任务"));
         Runnable r = () -> {
-            String k = key();
-            try {
-                String v = dkvClient.get(k);
-                if (StringUtils.isNoneBlank(v)) {
-                    File file = new File(String.format("%s/%s", path, FILENAME));
-                    try (FileWriter writer = new FileWriter(file)) {
-                        writer.write(v);
-                    }
-                }
-            } catch (DkvException | IOException e) {
-                LOGGER.error(e.getMessage());
-            }
-            File file = new File(String.format("%s/%s", path, FILENAME));
-            String data = null;
-            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-                data = sb.toString();
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage());
-            }
-            try {
-                if (!StringUtils.isBlank(data)) {
-                    Map m = objectMapper.readValue(data, Map.class);
-                    Properties props = javaPropsMapper.writeValueAsProperties(m);
-                    properties.forEach((s, o) -> {
-                        if (!props.contains(s)) {
-                            properties.remove(s);
-                        }
-                    });
-                    props.forEach((s, o) -> {
-                        properties.put(String.valueOf(s), o);
-                    });
-                }
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage());
-            }
+            refresher();
         };
         r.run();
         remoteSyncExecutorService.scheduleAtFixedRate(r, 30, 30, TimeUnit.SECONDS);
+    }
+
+    public void refresher () {
+        String k = key();
+        try {
+            String v = dkvClient.get(k);
+            if (StringUtils.isNoneBlank(v)) {
+                File file = new File(String.format("%s/%s", path, FILENAME));
+                try (FileWriter writer = new FileWriter(file)) {
+                    writer.write(v);
+                }
+            }
+        } catch (DkvException | IOException e) {
+            LOGGER.error(e.getMessage());
+        }
+        File file = new File(String.format("%s/%s", path, FILENAME));
+        String data = null;
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            data = sb.toString();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage());
+        }
+        try {
+            if (!StringUtils.isBlank(data)) {
+                Map m = objectMapper.readValue(data, Map.class);
+                Properties props = javaPropsMapper.writeValueAsProperties(m);
+                properties.forEach((s, o) -> {
+                    if (!props.contains(s)) {
+                        properties.remove(s);
+                    }
+                });
+                props.forEach((s, o) -> {
+                    properties.put(String.valueOf(s), o);
+                });
+            }
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage());
+        }
     }
 
     /**
@@ -139,7 +143,7 @@ public class Configurator {
         /**
          * 配置属性
          *
-         * @param master dkv slaves地址
+         * @param slaves dkv slaves地址
          * @return 构造器
          */
         public Builder slaves(Set<String> slaves) {
@@ -316,5 +320,9 @@ public class Configurator {
      */
     public void close() {
         remoteSyncExecutorService.shutdown();
+    }
+
+    public DkvClient getDkvClient () {
+        return dkvClient;
     }
 }

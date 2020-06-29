@@ -15,12 +15,19 @@
  */
 package com.github.xincao9.configurator;
 
+import com.github.xincao9.configurator.dkv.DkvClient;
 import org.junit.*;
 
 /**
  * @author xincao9@gmail.com
  */
 public class ConfiguratorTest {
+
+    private static final String MASTER = "localhost:9090";
+    private static final String ENV = "TEST";
+    private static final String GROUP = "BASE";
+    private static final String PROJECT = "USER-SERVICE";
+    private static final String VERSION = "v1.0";
 
     public ConfiguratorTest() {
     }
@@ -47,14 +54,17 @@ public class ConfiguratorTest {
     @Test
     public void testGet() throws Throwable {
         Configurator configurator = Configurator.Builder.newBuilder()
-            .master("localhost:9090")
-            .env("test")
-            .group("cbs")
-            .project("user-service")
-            .version("1.0")
+            .master(MASTER)
+            .env(ENV)
+            .group(GROUP)
+            .project(PROJECT)
+            .version(VERSION)
             .build();
+        DkvClient dkvClient = configurator.getDkvClient();
+        dkvClient.set(configurator.key(), "{\"redis\": {\"host\": \"127.0.0.1\", \"port\": 6379}}");
+        configurator.refresher();
         System.out.println(configurator.get("redis.host"));
-        Thread.sleep(3000);
+        dkvClient.delete(configurator.key());
         configurator.close();
     }
 
