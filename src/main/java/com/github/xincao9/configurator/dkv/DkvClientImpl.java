@@ -150,9 +150,9 @@ public class DkvClientImpl implements DkvClient {
      * @return 端点
      * @throws DkvException Dkv异常
      */
-    private String balancer () throws DkvException {
+    private String balancer() throws DkvException {
         if (endpoints != null) {
-            return endpoints.get((int)(counter.incrementAndGet() % endpoints.size()));
+            return endpoints.get((int) (counter.incrementAndGet() % endpoints.size()));
         }
         throw new DkvException("endpoints is empty");
     }

@@ -26,7 +26,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 @BenchmarkMode(Mode.Throughput)
 @Warmup(iterations = 5)
-@Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 5, timeUnit = TimeUnit.MINUTES)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @State(Scope.Benchmark)
 public class DkvClientTest {

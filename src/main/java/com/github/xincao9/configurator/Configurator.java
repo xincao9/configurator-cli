@@ -114,6 +114,9 @@ public class Configurator {
         remoteSyncExecutorService.scheduleAtFixedRate(r, 30, 30, TimeUnit.SECONDS);
     }
 
+    /**
+     * 构建器
+     */
     static class Builder {
 
         private final Configurator configurator;
@@ -122,41 +125,89 @@ public class Configurator {
             this.configurator = configurator;
         }
 
+        /**
+         * 配置属性
+         *
+         * @param master dkv master地址
+         * @return 构造器
+         */
         public Builder master(String master) {
             configurator.master = master;
             return this;
         }
 
+        /**
+         * 配置属性
+         *
+         * @param master dkv slaves地址
+         * @return 构造器
+         */
         public Builder slaves(Set<String> slaves) {
             configurator.slaves = slaves;
             return this;
         }
 
+        /**
+         * 配置属性
+         *
+         * @param env 环境
+         * @return 构造器
+         */
         public Builder env(String env) {
             configurator.env = env;
             return this;
         }
 
+        /**
+         * 配置属性
+         *
+         * @param group 业务组
+         * @return 构造器
+         */
         public Builder group(String group) {
             configurator.group = group;
             return this;
         }
 
+        /**
+         * 配置属性
+         *
+         * @param project 项目
+         * @return 构造器
+         */
         public Builder project(String project) {
             configurator.project = project;
             return this;
         }
 
+        /**
+         * 配置属性
+         *
+         * @param version 版本
+         * @return 构造器
+         */
         public Builder version(String version) {
             configurator.version = version;
             return this;
         }
 
+        /**
+         * 创建构造器
+         *
+         * @return 构造器
+         */
         public static Builder newBuilder() {
             return new Builder(new Configurator());
         }
 
-        public Configurator build() throws Throwable {
+        /**
+         * 构建
+         *
+         * @return 配置器
+         * @throws ConfiguratorException 配置器异常
+         * @throws DkvException          dkv异常
+         */
+        public Configurator build() throws ConfiguratorException, DkvException {
             configurator.init();
             return configurator;
         }
@@ -166,10 +217,22 @@ public class Configurator {
         return String.format(KEY_FORMAT, env, group, project, version);
     }
 
+    /**
+     * 获取属性值
+     *
+     * @param key 键
+     * @return 值
+     */
     public Object get(String key) {
         return properties.get(key);
     }
 
+    /**
+     * 获取属性值
+     *
+     * @param key 键
+     * @return 值
+     */
     public String getString(String key) {
         Object value = properties.get(key);
         if (value == null) {
@@ -178,6 +241,12 @@ public class Configurator {
         return String.valueOf(value);
     }
 
+    /**
+     * 获取属性值
+     *
+     * @param key 键
+     * @return 值
+     */
     public Integer getInteger(String key) {
         Object value = properties.get(key);
         if (value == null) {
@@ -186,6 +255,12 @@ public class Configurator {
         return Integer.valueOf(String.valueOf(value));
     }
 
+    /**
+     * 获取属性值
+     *
+     * @param key 键
+     * @return 值
+     */
     public Long getLong(String key) {
         Object value = properties.get(key);
         if (value == null) {
@@ -194,6 +269,12 @@ public class Configurator {
         return Long.valueOf(String.valueOf(value));
     }
 
+    /**
+     * 获取属性值
+     *
+     * @param key 键
+     * @return 值
+     */
     public Float getFloat(String key) {
         Object value = properties.get(key);
         if (value == null) {
@@ -202,6 +283,12 @@ public class Configurator {
         return Float.valueOf(String.valueOf(value));
     }
 
+    /**
+     * 获取属性值
+     *
+     * @param key 键
+     * @return 值
+     */
     public Double getDouble(String key) {
         Object value = properties.get(key);
         if (value == null) {
@@ -210,6 +297,12 @@ public class Configurator {
         return Double.valueOf(String.valueOf(value));
     }
 
+    /**
+     * 获取属性值
+     *
+     * @param key 键
+     * @return 值
+     */
     public Boolean getBoolean(String key) {
         Object value = properties.get(key);
         if (value == null) {
@@ -218,6 +311,9 @@ public class Configurator {
         return Boolean.valueOf(String.valueOf(value));
     }
 
+    /**
+     * 关闭资源
+     */
     public void close() {
         remoteSyncExecutorService.shutdown();
     }
