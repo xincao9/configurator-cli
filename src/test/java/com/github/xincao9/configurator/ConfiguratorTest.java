@@ -31,6 +31,7 @@ public class ConfiguratorTest {
     private static final String GROUP = "BASE";
     private static final String PROJECT = "USER-SERVICE";
     private static final String VERSION = "v1.0";
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ConfiguratorTest() {
     }
@@ -64,7 +65,6 @@ public class ConfiguratorTest {
             .version(VERSION)
             .build();
         DkvClient dkvClient = configurator.getDkvClient();
-        ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> config = new HashMap();
         Map<String, Object> redis = new HashMap();
         config.put("redis", redis);

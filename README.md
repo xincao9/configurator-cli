@@ -6,9 +6,9 @@
 
 ```
 <dependency>
-    <artifactId>configurator-cli</artifactId>
-    <packaging>jar</packaging>
-    <version>1.0-SNAPSHOT</version>
+   <groupId>com.github.xincao9</groupId>
+   <artifactId>configurator-cli</artifactId>
+   <version>1.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -17,12 +17,24 @@
 ```
 Configurator configurator = Configurator.Builder.newBuilder()
     .master("localhost:9090")
-    .env("test")
-    .group("cbs")
-    .project("user-service")
-    .version("1.0")
+    .env("TEST")
+    .group("BASE")
+    .project("USER-SERVICE")
+    .version("v1.0")
     .build();
-System.out.println(configurator.get("redis.host"));
+System.out.println(configurator.getString("redis.host"));
+System.out.println(configurator.getInt("redis.port"));
 Thread.sleep(3000);
 configurator.close();
+```
+
+**_spring boot configurator_**
+
+```
+configurator.dkv.master=localhost:9090
+configurator.dkv.slaves=
+configurator.env=TEST
+configurator.group=BASE
+configurator.project=USER-SERVICE
+configurator.version=v1.0
 ```

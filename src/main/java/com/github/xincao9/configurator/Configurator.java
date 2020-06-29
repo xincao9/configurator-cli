@@ -316,6 +316,15 @@ public class Configurator {
     }
 
     /**
+     * 获取配置属性
+     *
+     * @return 配置属性
+     */
+    public Map<String, Object> getProperties () {
+        return properties;
+    }
+
+    /**
      * 关闭资源
      */
     public void close() {
