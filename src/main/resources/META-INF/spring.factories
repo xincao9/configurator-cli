@@ -1,2 +1,1 @@
-org.springframework.boot.env.PropertySourceLoader=\
-com.github.xincao9.configurator.ConfiguratorPropertySourceLoader
+org.springframework.boot.env.EnvironmentPostProcessor=com.github.xincao9.configurator.ConfiguratorEnvironmentPostProcessor

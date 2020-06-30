@@ -19,24 +19,23 @@ import com.github.xincao9.configurator.dkv.DkvException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.env.PropertySourceLoader;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.Environment;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.env.EnvironmentPostProcessor;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
-import org.springframework.core.env.PropertySource;
-import org.springframework.core.io.Resource;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * configurator 从远程加载配置
  *
  * @author xincao9@gmail.com
  */
-public class ConfiguratorPropertySourceLoader implements PropertySourceLoader, EnvironmentAware {
+public class ConfiguratorEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConfiguratorPropertySourceLoader.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConfiguratorEnvironmentPostProcessor.class);
 
     private static final String EXT = "configurator";
     private static final String DKV_MASTER = "configurator.dkv.master";
@@ -46,20 +45,9 @@ public class ConfiguratorPropertySourceLoader implements PropertySourceLoader, E
     private static final String PROJECT = "configurator.project";
     private static final String VERSION = "configurator.version";
     private Configurator configurator;
-    private Environment environment;
-
-    public ConfiguratorPropertySourceLoader () {
-        LOGGER.info("开始加载 {} ", EXT);
-    }
 
     @Override
-    public String[] getFileExtensions() {
-        return new String[]{EXT};
-    }
-
-    @Override
-    public List<PropertySource<?>> load(String name, Resource resource) throws IOException {
-        LOGGER.info("加载 {} 中", EXT);
+    public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         try {
             Set<String> slaves = new HashSet();
             String slavesStr = environment.getProperty(DKV_SLAVES);
@@ -75,13 +63,8 @@ public class ConfiguratorPropertySourceLoader implements PropertySourceLoader, E
                 .version(environment.getProperty(VERSION))
                 .build();
         } catch (ConfiguratorException | DkvException e) {
-            throw new IOException(e);
+            throw new RuntimeException(e);
         }
-        return Collections.singletonList(new MapPropertySource(name, configurator.getProperties()));
-    }
-
-    @Override
-    public void setEnvironment(Environment environment) {
-        this.environment = environment;
+        environment.getPropertySources().addLast(new MapPropertySource("configurator", configurator.getProperties()));
     }
 }
