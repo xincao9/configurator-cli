@@ -25,8 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -75,7 +75,7 @@ public class Configurator {
         remoteSyncExecutorService.scheduleAtFixedRate(r, 30, 30, TimeUnit.SECONDS);
     }
 
-    public void refresher () {
+    public void refresher() {
         String k = key();
         try {
             String v = dkvClient.get(k);
@@ -103,9 +103,10 @@ public class Configurator {
         try {
             if (!StringUtils.isBlank(data)) {
                 Map m = objectMapper.readValue(data, Map.class);
-                Properties props = javaPropsMapper.writeValueAsProperties(m);
+                Map<String, Object> props = new HashMap<>();
+                javaPropsMapper.writeValue(props, m);
                 properties.forEach((s, o) -> {
-                    if (!props.contains(s)) {
+                    if (!props.containsKey(s)) {
                         properties.remove(s);
                     }
                 });
@@ -320,7 +321,7 @@ public class Configurator {
      *
      * @return 配置属性
      */
-    public Map<String, Object> getProperties () {
+    public Map<String, Object> getProperties() {
         return properties;
     }
 
@@ -331,7 +332,7 @@ public class Configurator {
         remoteSyncExecutorService.shutdown();
     }
 
-    public DkvClient getDkvClient () {
+    public DkvClient getDkvClient() {
         return dkvClient;
     }
 }

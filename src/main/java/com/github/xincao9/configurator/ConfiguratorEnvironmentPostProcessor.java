@@ -37,34 +37,27 @@ public class ConfiguratorEnvironmentPostProcessor implements EnvironmentPostProc
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfiguratorEnvironmentPostProcessor.class);
 
-    private static final String EXT = "configurator";
-    private static final String DKV_MASTER = "configurator.dkv.master";
-    private static final String DKV_SLAVES = "configurator.dkv.slaves";
-    private static final String ENV = "configurator.env";
-    private static final String GROUP = "configurator.group";
-    private static final String PROJECT = "configurator.project";
-    private static final String VERSION = "configurator.version";
     private Configurator configurator;
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         try {
             Set<String> slaves = new HashSet();
-            String slavesStr = environment.getProperty(DKV_SLAVES);
+            String slavesStr = environment.getProperty(SystemConstant.DKV_SLAVES);
             if (StringUtils.isNoneBlank(slavesStr)) {
                 slaves = new HashSet(Arrays.asList(StringUtils.split(slavesStr, ",")));
             }
             configurator = Configurator.Builder.newBuilder()
-                .master(environment.getProperty(DKV_MASTER))
+                .master(environment.getProperty(SystemConstant.DKV_MASTER))
                 .slaves(slaves)
-                .env(environment.getProperty(ENV))
-                .group(environment.getProperty(GROUP))
-                .project(environment.getProperty(PROJECT))
-                .version(environment.getProperty(VERSION))
+                .env(environment.getProperty(SystemConstant.ENV))
+                .group(environment.getProperty(SystemConstant.GROUP))
+                .project(environment.getProperty(SystemConstant.PROJECT))
+                .version(environment.getProperty(SystemConstant.VERSION))
                 .build();
         } catch (ConfiguratorException | DkvException e) {
             throw new RuntimeException(e);
         }
-        environment.getPropertySources().addLast(new MapPropertySource(EXT, configurator.getProperties()));
+        environment.getPropertySources().addLast(new MapPropertySource(SystemConstant.EXT, configurator.getProperties()));
     }
 }

@@ -1,1 +1,2 @@
 org.springframework.boot.env.EnvironmentPostProcessor=com.github.xincao9.configurator.ConfiguratorEnvironmentPostProcessor
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.xincao9.configurator.ConfiguratorBeanPostProcessor
