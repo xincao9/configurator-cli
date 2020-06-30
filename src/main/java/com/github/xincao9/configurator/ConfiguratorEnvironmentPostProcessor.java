@@ -17,6 +17,7 @@ package com.github.xincao9.configurator;
 
 import com.github.xincao9.configurator.dkv.DkvException;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -65,6 +66,6 @@ public class ConfiguratorEnvironmentPostProcessor implements EnvironmentPostProc
         } catch (ConfiguratorException | DkvException e) {
             throw new RuntimeException(e);
         }
-        environment.getPropertySources().addLast(new MapPropertySource("configurator", configurator.getProperties()));
+        environment.getPropertySources().addLast(new MapPropertySource(EXT, configurator.getProperties()));
     }
 }
