@@ -56,6 +56,7 @@ public class Configurator {
     private final Map<String, Object> properties = new ConcurrentHashMap<>();
     private final JavaPropsMapper javaPropsMapper = new JavaPropsMapper();
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private Integer hashCode;
 
     private void init() throws ConfiguratorException, DkvException {
         path = String.format("%s/%s/%s/%s/%s", System.getenv("HOME"), env, group, project, version);
@@ -72,18 +73,23 @@ public class Configurator {
             refresher();
         };
         r.run();
-        remoteSyncExecutorService.scheduleAtFixedRate(r, 30, 30, TimeUnit.SECONDS);
+        remoteSyncExecutorService.scheduleAtFixedRate(r, SystemConstant.CONFIGURATOR_REFRESHER_SECONDS, SystemConstant.CONFIGURATOR_REFRESHER_SECONDS, TimeUnit.SECONDS);
     }
 
     public void refresher() {
         String k = key();
         try {
             String v = dkvClient.get(k);
-            if (StringUtils.isNoneBlank(v)) {
-                File file = new File(String.format("%s/%s", path, FILENAME));
-                try (FileWriter writer = new FileWriter(file)) {
-                    writer.write(v);
-                }
+            if (StringUtils.isBlank(v)) {
+                return;
+            }
+            int hashCode = v.hashCode();
+            if (this.hashCode != null && this.hashCode.equals(hashCode)) {
+                return;
+            }
+            File file = new File(String.format("%s/%s", path, FILENAME));
+            try (FileWriter writer = new FileWriter(file)) {
+                writer.write(v);
             }
         } catch (DkvException | IOException e) {
             LOGGER.error(e.getMessage());
@@ -117,6 +123,7 @@ public class Configurator {
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
         }
+        this.hashCode = hashCode;
     }
 
     /**
@@ -334,5 +341,9 @@ public class Configurator {
 
     public DkvClient getDkvClient() {
         return dkvClient;
+    }
+
+    public Integer getHashCode() {
+        return hashCode;
     }
 }

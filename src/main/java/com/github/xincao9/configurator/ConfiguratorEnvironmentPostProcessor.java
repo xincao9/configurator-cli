@@ -15,18 +15,10 @@
  */
 package com.github.xincao9.configurator;
 
-import com.github.xincao9.configurator.dkv.DkvException;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * configurator 从远程加载配置
@@ -35,29 +27,9 @@ import java.util.Set;
  */
 public class ConfiguratorEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConfiguratorEnvironmentPostProcessor.class);
-
-    private Configurator configurator;
-
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        try {
-            Set<String> slaves = new HashSet();
-            String slavesStr = environment.getProperty(SystemConstant.DKV_SLAVES);
-            if (StringUtils.isNoneBlank(slavesStr)) {
-                slaves = new HashSet(Arrays.asList(StringUtils.split(slavesStr, ",")));
-            }
-            configurator = Configurator.Builder.newBuilder()
-                .master(environment.getProperty(SystemConstant.DKV_MASTER))
-                .slaves(slaves)
-                .env(environment.getProperty(SystemConstant.ENV))
-                .group(environment.getProperty(SystemConstant.GROUP))
-                .project(environment.getProperty(SystemConstant.PROJECT))
-                .version(environment.getProperty(SystemConstant.VERSION))
-                .build();
-        } catch (ConfiguratorException | DkvException e) {
-            throw new RuntimeException(e);
-        }
+        Configurator configurator = ConfiguratorSpring.getConfigurator(environment);
         environment.getPropertySources().addLast(new MapPropertySource(SystemConstant.EXT, configurator.getProperties()));
     }
 }

@@ -15,7 +15,6 @@
  */
 package com.github.xincao9.configurator;
 
-import com.github.xincao9.configurator.dkv.DkvException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +27,7 @@ import org.springframework.util.ClassUtils;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -40,68 +36,54 @@ public class ConfiguratorBeanPostProcessor implements BeanPostProcessor, Environ
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfiguratorBeanPostProcessor.class);
     private Environment environment;
-    private Configurator configurator;
+
     private List<Pair<String, Pair<Object, Field>>> keyBeans = new CopyOnWriteArrayList<>();
+    private Integer hashCode;
 
     @PostConstruct
     public void initMethod() {
-        try {
-            Set<String> slaves = new HashSet();
-            String slavesStr = environment.getProperty(SystemConstant.DKV_SLAVES);
-            if (StringUtils.isNoneBlank(slavesStr)) {
-                slaves = new HashSet(Arrays.asList(StringUtils.split(slavesStr, ",")));
-            }
-            configurator = Configurator.Builder.newBuilder()
-                .master(environment.getProperty(SystemConstant.DKV_MASTER))
-                .slaves(slaves)
-                .env(environment.getProperty(SystemConstant.ENV))
-                .group(environment.getProperty(SystemConstant.GROUP))
-                .project(environment.getProperty(SystemConstant.PROJECT))
-                .version(environment.getProperty(SystemConstant.VERSION))
-                .build();
-        } catch (ConfiguratorException | DkvException e) {
-            throw new RuntimeException(e);
-        }
+        Configurator configurator = ConfiguratorSpring.getConfigurator(environment);
         Executors.newSingleThreadScheduledExecutor()
-            .scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    if (keyBeans.isEmpty()) {
+            .scheduleAtFixedRate(() -> {
+                if (keyBeans.isEmpty()) {
+                    return;
+                }
+                Integer hashCode = configurator.getHashCode();
+                if (this.hashCode != null && this.hashCode.equals(hashCode)) {
+                    return;
+                }
+                keyBeans.forEach((pair) -> {
+                    String key = pair.getO1();
+                    Object bean = pair.getO2().getO1();
+                    Field field = pair.getO2().getO2();
+                    if (field == null) {
                         return;
                     }
-                    keyBeans.forEach((pair) -> {
-                        String key = pair.getO1();
-                        Object bean = pair.getO2().getO1();
-                        Field field = pair.getO2().getO2();
-                        if (field == null) {
-                            return;
+                    try {
+                        Object value = configurator.get(key);
+                        if (field.getType() == Short.class) {
+                            value = Short.parseShort((String) value);
+                        } else if (field.getType() == Integer.class) {
+                            value = Integer.parseInt((String) value);
+                        } else if (field.getType() == Long.class) {
+                            value = Long.parseLong((String) value);
+                        } else if (field.getType() == Float.class) {
+                            value = Float.parseFloat((String) value);
+                        } else if (field.getType() == Double.class) {
+                            value = Double.parseDouble((String) value);
+                        } else if (field.getType() == Boolean.class) {
+                            value = Boolean.parseBoolean((String) value);
                         }
-                        try {
-                            Object value = configurator.get(key);
-                            if (field.getType() == Short.class) {
-                                value = Short.parseShort((String) value);
-                            } else if (field.getType() == Integer.class) {
-                                value = Integer.parseInt((String) value);
-                            } else if (field.getType() == Long.class) {
-                                value = Long.parseLong((String) value);
-                            } else if (field.getType() == Float.class) {
-                                value = Float.parseFloat((String) value);
-                            } else if (field.getType() == Double.class) {
-                                value = Double.parseDouble((String) value);
-                            } else if (field.getType() == Boolean.class) {
-                                value = Boolean.parseBoolean((String) value);
-                            }
-                            if (value != null) {
-                                field.setAccessible(true);
-                                field.set(bean, value);
-                                LOGGER.warn("key = {}, bean = {}, field = {}", key, bean.getClass().getSimpleName(), field.getName());
-                            }
-                        } catch (Throwable e) {
-                            LOGGER.error(e.getMessage());
+                        if (value != null) {
+                            field.setAccessible(true);
+                            field.set(bean, value);
                         }
-                    });
-                }
-            }, 10, 10, TimeUnit.SECONDS);
+                    } catch (Throwable e) {
+                        LOGGER.error(e.getMessage());
+                    }
+                });
+                this.hashCode = hashCode;
+            }, SystemConstant.CONFIGURATOR_REFRESHER_SECONDS, SystemConstant.CONFIGURATOR_REFRESHER_SECONDS, TimeUnit.SECONDS);
     }
 
     @Override
