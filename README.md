@@ -29,7 +29,7 @@ curl -X PUT -H 'content-type:application/json' 'http://localhost:9090/kv' -d '{"
 
 **_maven 依赖_**
 
-```
+```xml
 <dependency>
    <groupId>com.github.xincao9</groupId>
    <artifactId>configurator-cli</artifactId>
@@ -55,7 +55,7 @@ configurator.close();
 
 **_spring boot configurator_**
 
-```
+```properties
 configurator.dkv.master=localhost:9090
 configurator.dkv.slaves=
 configurator.env=TEST
