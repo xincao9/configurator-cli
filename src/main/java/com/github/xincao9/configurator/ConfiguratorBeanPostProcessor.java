@@ -61,7 +61,9 @@ public class ConfiguratorBeanPostProcessor implements BeanPostProcessor, Environ
                     }
                     try {
                         Object value = configurator.get(key);
-                        if (field.getType() == Short.class) {
+                        if (field.getType() == Byte.class) {
+                            value = Byte.parseByte((String) value);
+                        } else if (field.getType() == Short.class) {
                             value = Short.parseShort((String) value);
                         } else if (field.getType() == Integer.class) {
                             value = Integer.parseInt((String) value);
