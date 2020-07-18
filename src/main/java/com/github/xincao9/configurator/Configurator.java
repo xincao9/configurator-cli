@@ -245,12 +245,26 @@ public class Configurator {
      * @param key 键
      * @return 值
      */
-    public String getString(String key) {
-        Object value = properties.get(key);
+    public Byte getByte(String key) {
+        Object value = get(key);
         if (value == null) {
             return null;
         }
-        return String.valueOf(value);
+        return Byte.valueOf((String) value);
+    }
+
+    /**
+     * 获取属性值
+     *
+     * @param key 键
+     * @return 值
+     */
+    public Short getShort(String key) {
+        Object value = get(key);
+        if (value == null) {
+            return null;
+        }
+        return Short.valueOf((String) value);
     }
 
     /**
@@ -260,7 +274,7 @@ public class Configurator {
      * @return 值
      */
     public Integer getInteger(String key) {
-        Object value = properties.get(key);
+        Object value = get(key);
         if (value == null) {
             return null;
         }
@@ -274,7 +288,7 @@ public class Configurator {
      * @return 值
      */
     public Long getLong(String key) {
-        Object value = properties.get(key);
+        Object value = get(key);
         if (value == null) {
             return null;
         }
@@ -288,7 +302,7 @@ public class Configurator {
      * @return 值
      */
     public Float getFloat(String key) {
-        Object value = properties.get(key);
+        Object value = get(key);
         if (value == null) {
             return null;
         }
@@ -302,7 +316,7 @@ public class Configurator {
      * @return 值
      */
     public Double getDouble(String key) {
-        Object value = properties.get(key);
+        Object value = get(key);
         if (value == null) {
             return null;
         }
@@ -316,11 +330,25 @@ public class Configurator {
      * @return 值
      */
     public Boolean getBoolean(String key) {
-        Object value = properties.get(key);
+        Object value = get(key);
         if (value == null) {
             return null;
         }
         return Boolean.valueOf(String.valueOf(value));
+    }
+
+    /**
+     * 获取属性值
+     *
+     * @param key 键
+     * @return 值
+     */
+    public String getString(String key) {
+        Object value = get(key);
+        if (value == null) {
+            return null;
+        }
+        return String.valueOf(value);
     }
 
     /**
