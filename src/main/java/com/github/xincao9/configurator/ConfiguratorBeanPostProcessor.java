@@ -37,7 +37,7 @@ public class ConfiguratorBeanPostProcessor implements BeanPostProcessor, Environ
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfiguratorBeanPostProcessor.class);
     private Environment environment;
 
-    private List<Pair<String, Pair<Object, Field>>> keyBeans = new CopyOnWriteArrayList<>();
+    private final List<Pair<String, Pair<Object, Field>>> keyBeans = new CopyOnWriteArrayList<>();
     private Integer hashCode;
 
     @PostConstruct
@@ -80,7 +80,7 @@ public class ConfiguratorBeanPostProcessor implements BeanPostProcessor, Environ
                             field.setAccessible(true);
                             field.set(bean, value);
                         }
-                    } catch (Throwable e) {
+                    } catch (IllegalAccessException | IllegalArgumentException | SecurityException e) {
                         LOGGER.error(e.getMessage());
                     }
                 });
