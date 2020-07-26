@@ -78,23 +78,25 @@ public class Configurator {
 
     public void refresher() {
         String k = key();
+        File file;
+        int hashCode = 0;
         try {
             String v = dkvClient.get(k);
             if (StringUtils.isBlank(v)) {
                 return;
             }
-            int hashCode = v.hashCode();
+            hashCode = v.hashCode();
             if (this.hashCode != null && this.hashCode.equals(hashCode)) {
                 return;
             }
-            File file = new File(String.format("%s/%s", path, FILENAME));
+            file = new File(String.format("%s/%s", path, FILENAME));
             try (FileWriter writer = new FileWriter(file)) {
                 writer.write(v);
             }
         } catch (DkvException | IOException e) {
             LOGGER.error(e.getMessage());
+            return;
         }
-        File file = new File(String.format("%s/%s", path, FILENAME));
         String data = null;
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             StringBuilder sb = new StringBuilder();
@@ -105,6 +107,7 @@ public class Configurator {
             data = sb.toString();
         } catch (IOException e) {
             LOGGER.error(e.getMessage());
+            return;
         }
         try {
             if (!StringUtils.isBlank(data)) {
